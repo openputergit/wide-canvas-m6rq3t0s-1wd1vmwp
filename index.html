@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerability Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes radar {
+            0% { transform: rotate(0deg); opacity: 1; }
+            100% { transform: rotate(360deg); opacity: 0.5; }
+        }
+        .radar-animation {
+            animation: radar 2s linear infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a2e4c 0%, #2d4b7c 100%);
+        }
+        .vulnerability-card {
+            transition: all 0.3s ease;
+        }
+        .vulnerability-card:hover {
+            transform: translateY(-2px);
+        }
+        .loading-bar {
+            animation: loading 2s ease-in-out infinite;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+            background-size: 200% 100%;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-['Inter']">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <i class="bi bi-shield-check me-2"></i>
+                Vulnerability Scanner
+            </h1>
+            <p class="text-lg text-gray-300">Secure your web applications with our advanced vulnerability detection system</p>
+        </div>
+
+        <!-- URL Input Section -->
+        <div class="max-w-2xl mx-auto bg-white/10 backdrop-blur-lg rounded-lg p-6 mb-8">
+            <form id="scanForm" class="space-y-4">
+                <div class="relative">
+                    <input type="url" id="urlInput" required
+                        class="w-full px-4 py-3 bg-white/5 border border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                        placeholder="Enter website URL (e.g., https://example.com)">
+                </div>
+                <button type="submit" id="scanButton"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="bi bi-search"></i>
+                    Start Scanning
+                </button>
+            </form>
+        </div>
+
+        <!-- Scanning Progress (Initially Hidden) -->
+        <div id="scanningProgress" class="max-w-2xl mx-auto mb-8 hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full radar-animation"></div>
+                </div>
+                <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div class="loading-bar h-full w-full rounded-full"></div>
+                </div>
+                <p class="text-center mt-4 text-blue-300">Scanning website for vulnerabilities...</p>
+            </div>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsSection" class="max-w-4xl mx-auto hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 mb-4">
+                <h2 class="text-2xl font-semibold mb-4">Scan Results</h2>
+                <div id="vulnerabilitiesList" class="grid gap-4 md:grid-cols-2">
+                    <!-- Results will be populated here -->
+                </div>
+                <button id="downloadReport" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 flex items-center gap-2">
+                    <i class="bi bi-download"></i>
+                    Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mockVulnerabilities = [
+            { id: 1, name: 'SQL Injection', status: 'Vulnerable', severity: 'High', description: 'Potential SQL injection vulnerability detected in login form' },
+            { id: 2, name: 'XSS Protection', status: 'Safe', severity: 'Low', description: 'Cross-site scripting protection is properly configured' },
+            { id: 3, name: 'SSL/TLS', status: 'Vulnerable', severity: 'Medium', description: 'Outdated SSL protocol version detected' },
+            { id: 4, name: 'CSRF Protection', status: 'Safe', severity: 'Low', description: 'CSRF tokens are properly implemented' }
+        ];
+
+        document.getElementById('scanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            
+            // Show scanning progress
+            document.getElementById('scanningProgress').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            
+            // Simulate scanning delay
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Hide progress and show results
+            document.getElementById('scanningProgress').classList.add('hidden');
+            document.getElementById('resultsSection').classList.remove('hidden');
+            
+            // Display results
+            displayResults(mockVulnerabilities);
+        });
+
+        function displayResults(vulnerabilities) {
+            const container = document.getElementById('vulnerabilitiesList');
+            container.innerHTML = '';
+
+            vulnerabilities.forEach(vuln => {
+                const card = document.createElement('div');
+                card.className = 'vulnerability-card bg-white/5 rounded-lg p-4 border border-gray-600';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold">${vuln.name}</h3>
+                        <span class="px-3 py-1 rounded-full text-sm ${vuln.status === 'Safe' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">
+                            ${vuln.status}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-300">${vuln.description}</p>
+                    <div class="mt-2 flex items-center">
+                        <span class="text-sm ${vuln.severity === 'High' ? 'text-red-400' : vuln.severity === 'Medium' ? 'text-yellow-400' : 'text-green-400'}">
+                            ${vuln.severity} Severity
+                        </span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById('downloadReport').addEventListener('click', () => {
+            const report = mockVulnerabilities.map(vuln => 
+                `${vuln.name} - Status: ${vuln.status} - Severity: ${vuln.severity}\n${vuln.description}\n`
+            ).join('\n');
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vulnerability-report.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
